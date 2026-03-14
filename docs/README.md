@@ -15,7 +15,7 @@ This folder collects the working documentation for the birefringence proxy workf
 ## Related Code And Config
 
 - Pipeline entrypoint: [../scripts/run_analysis_pipeline.py](../scripts/run_analysis_pipeline.py)
-- New target registration analysis: [../scripts/analyze_rotation_calibration_new.py](../scripts/analyze_rotation_calibration_new.py)
+- Derotation correction: [../derotation_test/solve_center.py](../derotation_test/solve_center.py)
 - Short-frame QC package: [../shortframe_calibration/README.md](../shortframe_calibration/README.md)
 - Dataset manifest: [../configs/datasets/analysis_manifest.json](../configs/datasets/analysis_manifest.json)
 - Horizontal ROI preset: [../configs/roi_presets/horizontal_center_3split.json](../configs/roi_presets/horizontal_center_3split.json)

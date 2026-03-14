@@ -114,45 +114,49 @@ The package currently generates:
 - Phase A.5 derotation visual QC
 - Phase B raw/corrected signal sanity QC
 
-## 6. New Registration Target Calibration
+## 6. Final Derotation Correction
 
-The original rotation center was not sufficiently convincing for short-frame alignment checks, so a new printed registration target was acquired.
+The original rotation center `(1204, 528)` from Section 2 was refined using landmark-based geometric solving with the `rotation_calibration_new` registration target dataset.
 
-This new dataset was used to estimate a better center candidate:
+Method:
 
-- new center candidate: `(953.5, 613.0)`
+- 7 landmark points manually identified at 0/45/70/90/135/160/165 deg
+- `scipy.optimize.least_squares` solves for rotation center
+- auto-refinement via NCC grid search for imprecise landmarks
+- per-angle sub-pixel shift via phase correlation for all 34 angles
 
-We then implemented angle-wise post-rotation translation estimation on top of that center.
+Final result:
+
+- rotation center: `(1099.2, 543.3)`
+- NCC after correction: all 34 angles above `0.96`, most above `0.98`
+- per-angle translation shifts up to ~40 px (phase correlation)
 
 Implemented file:
 
-- [../scripts/analyze_rotation_calibration_new.py](../scripts/analyze_rotation_calibration_new.py)
+- [../derotation_test/solve_center.py](../derotation_test/solve_center.py)
 
-Generated reusable correction spec:
+Generated correction spec:
 
-- [../analysis_outputs/rotation_calibration_new/rotation_translation_correction.json](../analysis_outputs/rotation_calibration_new/rotation_translation_correction.json)
+- [../analysis_outputs/rotation_calibration_new/solved_correction.json](../analysis_outputs/rotation_calibration_new/solved_correction.json)
+- referenced from `analysis_manifest.json` as `rotation_correction`
 
-Important status note:
-
-- the implementation for `rotation + translation` exists
-- but on the current target QC metrics it does **not yet outperform** `rotation-only`
-- so it should be treated as an experimental correction candidate, not yet as the default production geometry
+This is the **production derotation geometry**. See [rotation_calibration.md](rotation_calibration.md) Section 14 for full details.
 
 ## 7. Current Technical Status
 
 What is working:
 
 - data interpretation and acquisition conventions are documented
-- original rotation calibration is implemented and reproducible
+- rotation calibration: original center + valid mask implemented and reproducible
+- **final derotation correction**: landmark-based center + per-angle shift verified (NCC > 0.96 all angles)
 - ROI presets exist for both broad and refined review
 - raw analysis pipeline v1 is implemented
 - short-frame QC package is implemented
-- new target-based rotation-plus-translation correction prototype is implemented
 
 What is still open:
 
-- choose whether to keep the original derotation geometry or switch to a revised one after better target-based validation
-- decide whether registration QC should be redefined with a more stable metric
+- integrate `solved_correction.json` into the analysis pipeline and shortframe QC derotation logic
+- re-run shortframe calibration QC with the new derotation geometry
 - continue ROI refinement where sample-specific adjustment is still needed
 - compare final proxy outputs against Mueller-matrix `LD` / `LB` summaries
 

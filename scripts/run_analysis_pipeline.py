@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tifffile
 from PIL import Image
-from scipy import stats
+from scipy import ndimage, stats
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -314,17 +314,79 @@ def get_dark_split(
 
 
 def rotate_plane(arr: np.ndarray, angle_deg: float, center_xy: tuple[float, float]) -> np.ndarray:
+    """Derotate: CCW rotation to undo CW sample rotation."""
     if abs(angle_deg) < 1e-9:
         return arr.astype(np.float32, copy=True)
     image = Image.fromarray(arr.astype(np.float32), mode="F")
     rotated = image.rotate(
-        -angle_deg,
+        angle_deg,
         resample=Image.Resampling.BILINEAR,
         expand=False,
         center=center_xy,
         fillcolor=0.0,
     )
     return np.asarray(rotated, dtype=np.float32)
+
+
+_CORRECTION_CACHE: dict[str, dict[str, Any]] | None = None
+
+
+def load_correction(manifest: dict[str, Any]) -> dict[str, Any] | None:
+    """Load solved_correction.json if referenced in manifest. Returns None if not available."""
+    global _CORRECTION_CACHE
+    corr_path_str = manifest.get("rotation_correction")
+    if not corr_path_str:
+        return None
+    corr_path = Path(corr_path_str)
+    if not corr_path.exists():
+        return None
+    cache_key = str(corr_path)
+    if _CORRECTION_CACHE is not None and cache_key in _CORRECTION_CACHE:
+        return _CORRECTION_CACHE[cache_key]
+
+    raw = load_json(corr_path)
+    cx = float(raw["solved_center"]["x"])
+    cy = float(raw["solved_center"]["y"])
+    center_half = ((cx - 0.5) / 2.0, (cy - 0.5) / 2.0)
+
+    shift_table: dict[int, tuple[float, float]] = {}
+    for entry in raw.get("translation_table", []):
+        angle = int(round(entry["angle_deg"]))
+        dx = float(entry.get("shift_x_px", 0.0)) / 2.0
+        dy = float(entry.get("shift_y_px", 0.0)) / 2.0
+        shift_table[angle] = (dx, dy)
+
+    result = {"center_half": center_half, "shift_table": shift_table}
+    if _CORRECTION_CACHE is None:
+        _CORRECTION_CACHE = {}
+    _CORRECTION_CACHE[cache_key] = result
+    return result
+
+
+def get_center_halfres(manifest: dict[str, Any]) -> tuple[float, float]:
+    """Get rotation center in half-res coords, preferring solved_correction if available."""
+    corr = load_correction(manifest)
+    if corr is not None:
+        return corr["center_half"]
+    return load_rotation_center_halfres(Path(manifest["rotation_geometry"]))
+
+
+def derotate_and_shift(
+    arr: np.ndarray,
+    angle_deg: float,
+    center_xy: tuple[float, float],
+    manifest: dict[str, Any],
+) -> np.ndarray:
+    """Derotate plane and apply per-angle translational shift from solved_correction."""
+    rotated = rotate_plane(arr, angle_deg, center_xy)
+    corr = load_correction(manifest)
+    if corr is None:
+        return rotated
+    angle_key = int(round(angle_deg))
+    dx, dy = corr["shift_table"].get(angle_key, (0.0, 0.0))
+    if abs(dx) < 1e-6 and abs(dy) < 1e-6:
+        return rotated
+    return ndimage.shift(rotated, (dy, dx), order=1, mode="constant", cval=0.0).astype(np.float32)
 
 
 def load_halfres_valid_mask(mask_path: Path) -> np.ndarray:
@@ -837,7 +899,7 @@ def extract_sample_bundle(
 
     roi_layout = load_json(Path(manifest["roi_preset_source"]))
     half_valid_mask = load_halfres_valid_mask(Path(manifest["rotation_valid_mask"]))
-    center_half = load_rotation_center_halfres(Path(manifest["rotation_geometry"]))
+    center_half = get_center_halfres(manifest)
     roi_entries = build_roi_entries(sample, roi_layout)
     union_mask = build_union_mask(half_valid_mask.shape, roi_entries)
     union_mask_valid = union_mask & half_valid_mask
@@ -887,20 +949,23 @@ def extract_sample_bundle(
                     np.mean(sample_split[channel][union_mask_valid] >= SATURATION_LEVEL)
                 )
                 dark_union_raw[mode_index, angle_index, raw_channel_index] = masked_mean(dark_plane, union_mask_valid)
-                corrected_sample[channel] = rotate_plane(
+                corrected_sample[channel] = derotate_and_shift(
                     (sample_split[channel] - dark_plane) / sample_frame.exposure_us,
                     float(angle_deg),
                     center_half,
+                    manifest,
                 )
-                corrected_blank[channel] = rotate_plane(
+                corrected_blank[channel] = derotate_and_shift(
                     (blank_split[channel] - dark_plane) / blank_frame.exposure_us,
                     float(angle_deg),
                     center_half,
+                    manifest,
                 )
-                corrected_empty[channel] = rotate_plane(
+                corrected_empty[channel] = derotate_and_shift(
                     (empty_split[channel] - dark_plane) / empty_frame.exposure_us,
                     float(angle_deg),
                     center_half,
+                    manifest,
                 )
 
             corrected_sample["G"] = 0.5 * (corrected_sample["G1"] + corrected_sample["G2"])
@@ -1344,7 +1409,7 @@ def run_roundtrip_qc(manifest: dict[str, Any], samples: list[SampleSpec], output
         return roundtrip_json_path
 
     half_valid_mask = load_halfres_valid_mask(Path(manifest["rotation_valid_mask"]))
-    center_half = load_rotation_center_halfres(Path(manifest["rotation_geometry"]))
+    center_half = get_center_halfres(manifest)
     sample_by_type = {}
     for sample in samples:
         sample_by_type.setdefault(sample.sample_type, sample)

@@ -7,3 +7,8 @@ __pycache__/
 data/
 analysis_outputs/
 shortframe_calibration/outputs/
+derotation_test/*.png
+derotation_test/solved_correction.json
+derotation_test/suspect_crops/
+derotation_test/all_angle_crops/
+roi_size_comparison/outputs/

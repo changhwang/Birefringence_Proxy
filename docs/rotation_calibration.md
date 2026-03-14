@@ -1,4 +1,4 @@
-﻿# Rotation Calibration Workflow
+# Rotation Calibration Workflow
 
 This document records, in detail, how the rotation calibration step was performed for the birefringence image analysis workflow.
 
@@ -358,4 +358,54 @@ Rotation calibration summary:
 - largest safe rectangle: `x=799`, `y=145`, `w=765`, `h=766`
 
 This was the geometry foundation used for the later ROI review and custom ROI preset work.
+
+## 14. Derotation verification and refined correction (`solved_correction.json`)
+
+The original center `(1204, 528)` from Section 13 was derived from edge-based estimation. A more accurate calibration was performed using landmark-based geometric solving, documented here.
+
+### Method
+
+1. **Landmark identification**: A distinctive L-shaped feature visible in the calibration target RGB images was manually identified in the 1000x1000 center crops at selected angles. Coordinates were converted to full-resolution (2048x1088) by adding the crop origin `(524, 44)`.
+
+2. **Center solve (Phase 1)**: Given the 0-degree landmark position and the known rotation angles, `scipy.optimize.least_squares` solves for the rotation center that minimizes the prediction error across all landmark observations. The rotation model assumes clockwise rotation in image coordinates (y-down).
+
+3. **Landmark auto-refinement (Phase 1.5)**: For any landmark angle where the initial NCC with the 0-degree reference ROI is below 0.95, a grid search (±20 px, step 2 px) is performed around the expected position in the derotated image to find the best-matching location. The refined position is back-projected to the original image and the center is re-solved.
+
+4. **Per-angle sub-pixel shift (Phase 2)**: For all 34 angles (0, 5, ..., 165 deg), each image is derotated using the solved center, then phase correlation against the 0-degree reference ROI determines the residual translational shift `(dx, dy)`. Shifts are only applied if they improve the Normalized Cross-Correlation (NCC).
+
+### Landmarks used
+
+| Angle | Full-res (x, y) | Crop (x, y) |
+|------:|:----------------:|:------------:|
+| 0     | (732, 373)       | (208, 329)   |
+| 45    | (985, 139)       | (461, 95)    |
+| 70    | (1174, 120)      | (650, 76)    |
+| 90    | (1296, 183)      | (772, 139)   |
+| 135   | (1496, 424)      | (972, 380)   |
+| 160   | (1495, 578)      | (971, 534)   |
+| 165   | (1492, 619)      | (968, 575)   |
+
+### Results
+
+- **Solved center**: `(1099.2, 543.3)` (vs. original `(1204, 528)`)
+- **Residual norm**: 58.8 px across 7 landmark angles
+- **NCC after correction**: all 34 angles above `0.96`, most above `0.98`
+- **Suspect angles**: none (threshold `0.80`)
+
+### Output file
+
+The correction is stored in `analysis_outputs/rotation_calibration_new/solved_correction.json` and referenced from `configs/datasets/analysis_manifest.json` as `rotation_correction`. The JSON contains:
+
+- `solved_center`: the refined rotation center `{x, y}`
+- `landmarks_fullres`: the final (auto-refined) landmark positions
+- `translation_table`: array of 34 entries (one per 5-degree step), each with `angle_deg`, `shift_x_px`, `shift_y_px`, `ncc_before`, `ncc_after`, and `quality`
+- `suspect_angles`: list of angles with NCC below threshold (empty in the final run)
+
+### Reproducing
+
+```powershell
+.\venv\Scripts\python.exe derotation_test\solve_center.py
+```
+
+See `derotation_test/README.md` for full usage and options.
 

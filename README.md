@@ -18,7 +18,7 @@ Working repository for raw-image-based birefringence proxy analysis on printed o
 ## Main Entrypoints
 
 - analysis pipeline: [scripts/run_analysis_pipeline.py](scripts/run_analysis_pipeline.py)
-- new target registration analysis: [scripts/analyze_rotation_calibration_new.py](scripts/analyze_rotation_calibration_new.py)
+- derotation correction: [derotation_test/solve_center.py](derotation_test/solve_center.py)
 - short-frame QC: [shortframe_calibration/run_shortframe_qc.py](shortframe_calibration/run_shortframe_qc.py)
 
 ## Repository Scope

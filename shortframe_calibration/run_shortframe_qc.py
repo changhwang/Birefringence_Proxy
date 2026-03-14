@@ -122,10 +122,22 @@ def compute_phase_payload(sample: Any, manifest: dict[str, Any], roi_spec: dict[
     patch_width = roi_entries[0].half_rect[2]
     patch_height = roi_entries[0].half_rect[3]
     half_valid_mask = rp.load_halfres_valid_mask(Path(manifest["rotation_valid_mask"]))
-    center_half = rp.load_rotation_center_halfres(Path(manifest["rotation_geometry"]))
+    center_half = rp.get_center_halfres(manifest)
     union_mask = rp.build_union_mask(half_valid_mask.shape, roi_entries) & half_valid_mask
     bbox_x0, bbox_y0, bbox_x1, bbox_y1 = rp.mask_bbox(union_mask)
     bbox_mask = union_mask[bbox_y0:bbox_y1, bbox_x0:bbox_x1]
+
+    per_roi_masks = {
+        roi.label: rp.build_union_mask(half_valid_mask.shape, [roi]) & half_valid_mask
+        for roi in roi_entries
+    }
+    per_roi_curves = {
+        roi.label: {
+            "sample_corr": init_mode_channel_lists(("G",)),
+            "blank_corr": init_mode_channel_lists(("G",)),
+        }
+        for roi in roi_entries
+    }
 
     sample_records = rp.load_dataset_records(sample.sample_dir)
     blank_records = rp.load_dataset_records(sample.blank_dir)
@@ -164,21 +176,24 @@ def compute_phase_payload(sample: Any, manifest: dict[str, Any], roi_spec: dict[
             corrected_empty: dict[str, np.ndarray] = {}
             for channel in rp.RAW_CHANNELS:
                 dark_plane = dark_split[channel]
-                raw_rot_sample[channel] = rp.rotate_plane(sample_split[channel], float(angle_deg), center_half)
-                corrected_sample[channel] = rp.rotate_plane(
+                raw_rot_sample[channel] = rp.derotate_and_shift(sample_split[channel], float(angle_deg), center_half, manifest)
+                corrected_sample[channel] = rp.derotate_and_shift(
                     (sample_split[channel] - dark_plane) / sample_frame.exposure_us,
                     float(angle_deg),
                     center_half,
+                    manifest,
                 )
-                corrected_blank[channel] = rp.rotate_plane(
+                corrected_blank[channel] = rp.derotate_and_shift(
                     (blank_split[channel] - dark_plane) / blank_frame.exposure_us,
                     float(angle_deg),
                     center_half,
+                    manifest,
                 )
-                corrected_empty[channel] = rp.rotate_plane(
+                corrected_empty[channel] = rp.derotate_and_shift(
                     (empty_split[channel] - dark_plane) / empty_frame.exposure_us,
                     float(angle_deg),
                     center_half,
+                    manifest,
                 )
                 curves["dark_raw"][mode][channel][angle_index] = rp.masked_mean(dark_plane, union_mask)
                 curves["empty_corr"][mode][channel][angle_index] = rp.masked_mean(corrected_empty[channel], union_mask)
@@ -202,6 +217,11 @@ def compute_phase_payload(sample: Any, manifest: dict[str, Any], roi_spec: dict[
             curves["blank_corr"][mode]["G"][angle_index] = rp.masked_mean(corrected_blank["G"], union_mask)
             curves["sample_raw_rot"][mode]["G"][angle_index] = rp.masked_mean(raw_rot_sample["G"], union_mask)
             curves["sample_corr"][mode]["G"][angle_index] = rp.masked_mean(corrected_sample["G"], union_mask)
+
+            for roi in roi_entries:
+                rm = per_roi_masks[roi.label]
+                per_roi_curves[roi.label]["sample_corr"][mode]["G"][angle_index] = rp.masked_mean(corrected_sample["G"], rm)
+                per_roi_curves[roi.label]["blank_corr"][mode]["G"][angle_index] = rp.masked_mean(corrected_blank["G"], rm)
 
             if mode == "PPL":
                 for roi_index, roi in enumerate(roi_entries):
@@ -245,10 +265,11 @@ def compute_phase_payload(sample: Any, manifest: dict[str, Any], roi_spec: dict[
             sample_split = rp.get_raw_split(sample_frame.path)
             corrected_sample: dict[str, np.ndarray] = {}
             for channel in rp.RAW_CHANNELS:
-                corrected_sample[channel] = rp.rotate_plane(
+                corrected_sample[channel] = rp.derotate_and_shift(
                     (sample_split[channel] - dark_split[channel]) / sample_frame.exposure_us,
                     float(angle_deg),
                     center_half,
+                    manifest,
                 )
             corrected_sample["G"] = 0.5 * (corrected_sample["G1"] + corrected_sample["G2"])
             for channel in ALL_CHANNELS:
@@ -279,6 +300,41 @@ def compute_phase_payload(sample: Any, manifest: dict[str, Any], roi_spec: dict[
         )
         for signal in PHASE_B_SIGNALS
     }
+
+    per_roi_signal: dict[str, dict[str, Any]] = {}
+    for roi in roi_entries:
+        rc = per_roi_curves[roi.label]
+        roi_blank_median = rp.nanmedian(np.asarray(rc["blank_corr"]["PPL"]["G"], dtype=np.float64))
+        roi_tau = 0.02 * roi_blank_median
+        roi_eps = 0.005 * roi_blank_median
+        roi_sc = {s: [float("nan")] * len(rp.ANGLES_DEG) for s in PHASE_B_SIGNALS}
+        roi_sv = {s: [False] * len(rp.ANGLES_DEG) for s in PHASE_B_SIGNALS}
+        for ai in range(len(rp.ANGLES_DEG)):
+            vals, vld = rp.compute_signal_values_for_scalar(
+                sample_ppl=float(rc["sample_corr"]["PPL"]["G"][ai]),
+                sample_xpl=float(rc["sample_corr"]["XPL"]["G"][ai]),
+                blank_ppl=float(rc["blank_corr"]["PPL"]["G"][ai]),
+                blank_xpl=float(rc["blank_corr"]["XPL"]["G"][ai]),
+                eps_count=roi_eps,
+                tau_low=roi_tau,
+            )
+            for s in PHASE_B_SIGNALS:
+                roi_sc[s][ai] = float(vals[s])
+                roi_sv[s][ai] = bool(vld[s])
+        roi_sf = {
+            s: rp.fit_harmonic_curve(
+                np.asarray(roi_sc[s], dtype=np.float64),
+                np.asarray(roi_sv[s], dtype=bool),
+            )
+            for s in PHASE_B_SIGNALS
+        }
+        per_roi_signal[roi.label] = {
+            "signal_curves": roi_sc,
+            "signal_valid": roi_sv,
+            "signal_fits": roi_sf,
+            "eps_count_G": roi_eps,
+            "tau_low_G": roi_tau,
+        }
 
     g1_blank = np.asarray(curves["blank_corr"]["PPL"]["G1"] + curves["blank_corr"]["XPL"]["G1"], dtype=np.float64)
     g2_blank = np.asarray(curves["blank_corr"]["PPL"]["G2"] + curves["blank_corr"]["XPL"]["G2"], dtype=np.float64)
@@ -352,6 +408,7 @@ def compute_phase_payload(sample: Any, manifest: dict[str, Any], roi_spec: dict[
         "signal_curves": signal_curves,
         "signal_valid": signal_valid,
         "signal_fits": signal_fits,
+        "per_roi_signal": per_roi_signal,
         "g1_g2_curve_diff": g1_g2_curve_diff,
         "blank_flatness": blank_flatness,
         "summary_row": summary_row,
@@ -564,6 +621,53 @@ def plot_phase_b(payload: dict[str, Any], output_path: Path) -> None:
         )
 
     figure.suptitle(f"{sample.sample_id} Phase B Sanity QC", fontsize=16)
+    rp.ensure_dir(output_path.parent)
+    figure.savefig(output_path, dpi=170)
+    plt.close(figure)
+
+
+def plot_phase_b_per_roi(
+    sample_id: str, roi_label: str, roi_signal: dict[str, Any], output_path: Path
+) -> None:
+    angles = np.asarray(rp.ANGLES_DEG, dtype=np.float64)
+    signal_curves = roi_signal["signal_curves"]
+    signal_valid = roi_signal["signal_valid"]
+    signal_fits = roi_signal["signal_fits"]
+
+    signal_titles = {
+        "Afilm_PPL": "Afilm_PPL_G",
+        "Xfilm": "Xfilm_G",
+        "Xnorm_sample": "Xnorm_sample_G",
+        "Xnorm_blank": "Xnorm_blank_G",
+    }
+    figure, axes = plt.subplots(2, 2, figsize=(13, 9), constrained_layout=True)
+    for axis, signal_name in zip(axes.flat, PHASE_B_SIGNALS):
+        values = np.asarray(signal_curves[signal_name], dtype=np.float64)
+        valid_mask = np.asarray(signal_valid[signal_name], dtype=bool)
+        fit = signal_fits[signal_name]
+        axis.plot(angles, values, marker="o", label="raw curve")
+        if fit["fit_valid"]:
+            axis.plot(angles, fit["predicted"], linestyle="--", linewidth=1.6, label="fit")
+            residual = np.where(valid_mask, values - fit["predicted"], np.nan)
+            text = (
+                f"n={fit['n_valid_angles']}\n"
+                f"A2={fit['A2']:.4g}  A4={fit['A4']:.4g}\n"
+                f"RMSE={fit['rmse']:.4g}  NRMSE={fit['nrmse']:.4g}\n"
+                f"axis2={fit['axis2_deg']:.2f}deg  axis4={fit['axis4_deg']:.2f}deg"
+            )
+        else:
+            text = f"fit invalid\nn={fit['n_valid_angles']}"
+        axis.set_title(f"{signal_titles[signal_name]}")
+        axis.set_xlabel("theta (deg)")
+        axis.set_ylabel("Signal")
+        axis.grid(alpha=0.3)
+        axis.legend(fontsize=8)
+        axis.text(
+            0.98, 0.98, text, transform=axis.transAxes,
+            ha="right", va="top", fontsize=8,
+            bbox={"facecolor": "white", "alpha": 0.85},
+        )
+    figure.suptitle(f"{sample_id} / {roi_label} — Phase B Signal", fontsize=14)
     rp.ensure_dir(output_path.parent)
     figure.savefig(output_path, dpi=170)
     plt.close(figure)
@@ -848,7 +952,7 @@ def write_sample_outputs(payload: dict[str, Any], output_dir: Path) -> dict[str,
     rp.save_json(phase_b_json, build_phase_b_metrics(payload))
     rp.save_json(phase_a5_json, build_derotation_visual_metrics(payload))
 
-    return {
+    file_map = {
         "phaseA_plot": str(phase_a_plot.relative_to(REPO_ROOT)),
         "phaseA_csv": str(phase_a_csv.relative_to(REPO_ROOT)),
         "phaseA_json": str(phase_a_json.relative_to(REPO_ROOT)),
@@ -860,6 +964,23 @@ def write_sample_outputs(payload: dict[str, Any], output_dir: Path) -> dict[str,
         "phaseA5_json": str(phase_a5_json.relative_to(REPO_ROOT)),
     }
 
+    per_roi_signal = payload.get("per_roi_signal", {})
+    for roi_label, roi_sig in per_roi_signal.items():
+        roi_json = sample_dir / f"phaseB_signal_{sample.sample_id}_{roi_label}.json"
+        roi_plot = sample_dir / f"phaseB_signal_{sample.sample_id}_{roi_label}.png"
+        rp.save_json(roi_json, {
+            "sample_id": sample.sample_id,
+            "roi_label": roi_label,
+            "eps_count_G": roi_sig["eps_count_G"],
+            "tau_low_G": roi_sig["tau_low_G"],
+            "signal_fits": {s: fit_to_json(f) for s, f in roi_sig["signal_fits"].items()},
+        })
+        plot_phase_b_per_roi(sample.sample_id, roi_label, roi_sig, roi_plot)
+        file_map[f"phaseB_json_{roi_label}"] = str(roi_json.relative_to(REPO_ROOT))
+        file_map[f"phaseB_plot_{roi_label}"] = str(roi_plot.relative_to(REPO_ROOT))
+
+    return file_map
+
 
 def main() -> None:
     args = parse_args()
@@ -869,11 +990,28 @@ def main() -> None:
     rp.ensure_dir(output_dir)
 
     summary_rows = []
+    per_roi_summary_rows: list[dict[str, Any]] = []
     index_entries = []
     for sample in samples:
         payload = compute_phase_payload(sample, manifest, roi_spec)
         file_map = write_sample_outputs(payload, output_dir)
         summary_rows.append(payload["summary_row"])
+        for roi_label, roi_sig in payload.get("per_roi_signal", {}).items():
+            row: dict[str, Any] = {
+                "sample_id": sample.sample_id,
+                "roi_label": roi_label,
+                "eps_count_G": roi_sig["eps_count_G"],
+                "tau_low_G": roi_sig["tau_low_G"],
+            }
+            for signal_name in PHASE_B_SIGNALS:
+                fit = roi_sig["signal_fits"][signal_name]
+                row[f"A2_{signal_name}"] = float(fit["A2"])
+                row[f"A4_{signal_name}"] = float(fit["A4"])
+                row[f"axis2_{signal_name}_deg"] = float(fit["axis2_deg"])
+                row[f"axis4_{signal_name}_deg"] = float(fit["axis4_deg"])
+                row[f"RMSE_{signal_name}"] = float(fit["rmse"])
+                row[f"NRMSE_{signal_name}"] = float(fit["nrmse"])
+            per_roi_summary_rows.append(row)
         index_entries.append(
             {
                 "sample_id": sample.sample_id,
@@ -882,8 +1020,11 @@ def main() -> None:
         )
 
     summary_path = output_dir / "shortframe_qc_summary.csv"
+    per_roi_summary_path = output_dir / "shortframe_qc_per_roi_summary.csv"
     index_path = output_dir / "index.json"
     rp.write_csv_rows(summary_path, summary_rows)
+    if per_roi_summary_rows:
+        rp.write_csv_rows(per_roi_summary_path, per_roi_summary_rows)
     rp.save_json(
         index_path,
         {
@@ -891,6 +1032,7 @@ def main() -> None:
             "roi_spec": str(Path(manifest["roi_spec"]).relative_to(REPO_ROOT)),
             "samples": index_entries,
             "summary_csv": str(summary_path.relative_to(REPO_ROOT)),
+            "per_roi_summary_csv": str(per_roi_summary_path.relative_to(REPO_ROOT)),
         },
     )
 

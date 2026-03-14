@@ -4,6 +4,7 @@
     "XPL": "crosspol"
   },
   "rotation_geometry": "analysis_outputs/rotation_calibration/derotation_geometry.json",
+  "rotation_correction": "analysis_outputs/rotation_calibration_new/solved_correction.json",
   "rotation_valid_mask": "analysis_outputs/rotation_calibration/rotation_calibration_valid_mask.png",
   "roi_spec": "shortframe_calibration/shortframe_roi_200.json",
   "outputs_dir": "shortframe_calibration/outputs",

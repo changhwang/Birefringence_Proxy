@@ -5,6 +5,7 @@
   },
   "roi_preset_source": "configs/roi_presets/horizontal_center_3split.json",
   "rotation_geometry": "analysis_outputs/rotation_calibration/derotation_geometry.json",
+  "rotation_correction": "analysis_outputs/rotation_calibration_new/solved_correction.json",
   "rotation_valid_mask": "analysis_outputs/rotation_calibration/rotation_calibration_valid_mask.png",
   "tile": {
     "size": 64,
