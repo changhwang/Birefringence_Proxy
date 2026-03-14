@@ -1,0 +1,133 @@
+{
+  "mode_aliases": {
+    "PPL": "normal",
+    "XPL": "crosspol"
+  },
+  "roi_preset_source": "configs/roi_presets/horizontal_center_3split.json",
+  "rotation_geometry": "analysis_outputs/rotation_calibration/derotation_geometry.json",
+  "rotation_valid_mask": "analysis_outputs/rotation_calibration/rotation_calibration_valid_mask.png",
+  "tile": {
+    "size": 64,
+    "stride": 32,
+    "valid_fraction_threshold": 0.9
+  },
+  "samples": [
+    {
+      "sample_id": "QLB_s1",
+      "sample_type": "long",
+      "sample_dir": "data/QLB/RAW/QLB_s1",
+      "blank_dir": "data/Calibration/blank_longframe",
+      "empty_dir": "data/Calibration/empty_longframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 500
+    },
+    {
+      "sample_id": "QLB_s2",
+      "sample_type": "long",
+      "sample_dir": "data/QLB/RAW/QLB_s2",
+      "blank_dir": "data/Calibration/blank_longframe",
+      "empty_dir": "data/Calibration/empty_longframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 500
+    },
+    {
+      "sample_id": "QLB_s3",
+      "sample_type": "long",
+      "sample_dir": "data/QLB/RAW/QLB_s3",
+      "blank_dir": "data/Calibration/blank_longframe",
+      "empty_dir": "data/Calibration/empty_longframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 500
+    },
+    {
+      "sample_id": "QLB_s4",
+      "sample_type": "long",
+      "sample_dir": "data/QLB/RAW/QLB_s4",
+      "blank_dir": "data/Calibration/blank_longframe",
+      "empty_dir": "data/Calibration/empty_longframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 500
+    },
+    {
+      "sample_id": "QLB_s5",
+      "sample_type": "long",
+      "sample_dir": "data/QLB/RAW/QLB_s5",
+      "blank_dir": "data/Calibration/blank_longframe",
+      "empty_dir": "data/Calibration/empty_longframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 500
+    },
+    {
+      "sample_id": "QLB_s6",
+      "sample_type": "long",
+      "sample_dir": "data/QLB/RAW/QLB_s6",
+      "blank_dir": "data/Calibration/blank_longframe",
+      "empty_dir": "data/Calibration/empty_longframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 500
+    },
+    {
+      "sample_id": "QLB_s7",
+      "sample_type": "long",
+      "sample_dir": "data/QLB/RAW/QLB_s7",
+      "blank_dir": "data/Calibration/blank_longframe",
+      "empty_dir": "data/Calibration/empty_longframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 500
+    },
+    {
+      "sample_id": "QLB_s8",
+      "sample_type": "long",
+      "sample_dir": "data/QLB/RAW/QLB_s8",
+      "blank_dir": "data/Calibration/blank_longframe",
+      "empty_dir": "data/Calibration/empty_longframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 500
+    },
+    {
+      "sample_id": "QLB_s9",
+      "sample_type": "short",
+      "sample_dir": "data/QLB/RAW/QLB_s9",
+      "blank_dir": "data/Calibration/blank_shortframe",
+      "empty_dir": "data/Calibration/empty_shortframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 400
+    },
+    {
+      "sample_id": "QLB_s10",
+      "sample_type": "short",
+      "sample_dir": "data/QLB/RAW/QLB_s10",
+      "blank_dir": "data/Calibration/blank_shortframe",
+      "empty_dir": "data/Calibration/empty_shortframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 400
+    },
+    {
+      "sample_id": "QLB_s11",
+      "sample_type": "short",
+      "sample_dir": "data/QLB/RAW/QLB_s11",
+      "blank_dir": "data/Calibration/blank_shortframe",
+      "empty_dir": "data/Calibration/empty_shortframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 400
+    },
+    {
+      "sample_id": "QLB_s12",
+      "sample_type": "short",
+      "sample_dir": "data/QLB/RAW/QLB_s12",
+      "blank_dir": "data/Calibration/blank_shortframe",
+      "empty_dir": "data/Calibration/empty_shortframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 400
+    },
+    {
+      "sample_id": "QLB_s13",
+      "sample_type": "short",
+      "sample_dir": "data/QLB/RAW/QLB_s13",
+      "blank_dir": "data/Calibration/blank_shortframe",
+      "empty_dir": "data/Calibration/empty_shortframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 400
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "500": {
+    "size": 500,
+    "y": 278,
+    "default": {
+      "type": "span",
+      "left_x": 706,
+      "center_x": 931,
+      "right_x": 1166
+    },
+    "sample_overrides": {
+      "QLB_s1": {
+        "type": "span",
+        "right_x": 1136
+      },
+      "QLB_s2": {
+        "type": "span",
+        "right_x": 1136
+      },
+      "QLB_s5": {
+        "type": "span",
+        "center_x": 771
+      },
+      "QLB_s8": {
+        "type": "span",
+        "right_x": 1136
+      },
+      "QLB_s9": {
+        "type": "single",
+        "x": 821
+      },
+      "QLB_s10": {
+        "type": "single",
+        "x": 931
+      },
+      "QLB_s11": {
+        "type": "single",
+        "x": 881
+      },
+      "QLB_s12": {
+        "type": "single",
+        "x": 881
+      },
+      "QLB_s13": {
+        "type": "single",
+        "x": 799
+      }
+    }
+  },
+  "400": {
+    "size": 400,
+    "y": 328,
+    "default": {
+      "type": "span",
+      "left_x": 685,
+      "center_x": 981,
+      "right_x": 1289
+    },
+    "sample_overrides": {
+      "QLB_s1": {
+        "type": "span",
+        "right_x": 1259
+      },
+      "QLB_s2": {
+        "type": "span",
+        "right_x": 1259
+      },
+      "QLB_s5": {
+        "type": "span",
+        "center_x": 831
+      },
+      "QLB_s8": {
+        "type": "span",
+        "right_x": 1259
+      },
+      "QLB_s9": {
+        "type": "single",
+        "x": 881
+      },
+      "QLB_s10": {
+        "type": "single",
+        "x": 981
+      },
+      "QLB_s11": {
+        "type": "single",
+        "x": 931
+      },
+      "QLB_s12": {
+        "type": "single",
+        "x": 931
+      },
+      "QLB_s13": {
+        "type": "single",
+        "x": 799
+      }
+    }
+  },
+  "300": {
+    "size": 300,
+    "y": 378,
+    "default": {
+      "type": "span",
+      "left_x": 668,
+      "center_x": 1031,
+      "right_x": 1407
+    },
+    "sample_overrides": {
+      "QLB_s1": {
+        "type": "span",
+        "right_x": 1347
+      },
+      "QLB_s2": {
+        "type": "span",
+        "right_x": 1347
+      },
+      "QLB_s5": {
+        "type": "span",
+        "center_x": 901
+      },
+      "QLB_s8": {
+        "type": "span",
+        "right_x": 1377
+      },
+      "QLB_s9": {
+        "type": "single",
+        "x": 911
+      },
+      "QLB_s10": {
+        "type": "single",
+        "x": 1031
+      },
+      "QLB_s11": {
+        "type": "single",
+        "x": 1031
+      },
+      "QLB_s12": {
+        "type": "single",
+        "x": 1011
+      },
+      "QLB_s13": {
+        "type": "single",
+        "x": 799
+      }
+    }
+  }
+}

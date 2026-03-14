@@ -1,0 +1,261 @@
+{
+  "preset_name": "grid_3x3_refine_v1",
+  "description": "Initial vertical refinement preset. Long samples use a 3x3 grid, short samples use the center column only.",
+  "related_existing_preset": "horizontal_center_3split",
+  "sizes": {
+    "150": {
+      "size": 150,
+      "default_long": {
+        "type": "grid9",
+        "center_row_mode": "column_midpoint",
+        "left_x": 819,
+        "center_x": 1106,
+        "right_x": 1394,
+        "upper_y": 165,
+        "center_y": 453,
+        "lower_y": 741
+      },
+      "default_short": {
+        "type": "column3",
+        "center_row_mode": "column_midpoint",
+        "center_x": 1106,
+        "upper_y": 165,
+        "center_y": 453,
+        "lower_y": 741
+      },
+      "sample_overrides": {
+        "QLB_s1": {
+          "lower_y": 691,
+          "region_overrides": {
+            "ROI_LL": {"dy": -100},
+            "ROI_LC": {"dy": -75},
+            "ROI_LR": {"dy": -30}
+          }
+        },
+        "QLB_s2": {
+          "lower_y": 691,
+          "region_overrides": {
+            "ROI_LL": {"dy": -100},
+            "ROI_LC": {"dy": -75},
+            "ROI_LR": {"dy": -100}
+          }
+        },
+        "QLB_s3": {
+          "upper_y": 175,
+          "lower_y": 731,
+          "region_overrides": {
+            "ROI_LL": {"dy": -50},
+            "ROI_LC": {"dy": -50},
+            "ROI_LR": {"dy": -20}
+          }
+        },
+        "QLB_s4": {
+          "lower_y": 731
+        },
+        "QLB_s5": {
+          "lower_y": 731,
+          "region_overrides": {
+            "ROI_LL": {"dy": -50},
+            "ROI_LC": {"dy": -50},
+            "ROI_LR": {"dy": -50}
+          }
+        },
+        "QLB_s6": {
+          "upper_y": 195
+        },
+        "QLB_s7": {
+          "lower_y": 761,
+          "region_overrides": {
+            "ROI_UL": {"dy": 60},
+            "ROI_UC": {"dy": 20},
+            "ROI_UR": {"dy": 20}
+          }
+        },
+        "QLB_s8": {
+          "upper_y": 195,
+          "region_overrides": {
+            "ROI_LL": {"dy": -100},
+            "ROI_LC": {"dy": -70},
+            "ROI_LR": {"dy": -70}
+          }
+        },
+        "QLB_s9": {
+          "center_x": 1006
+        },
+        "QLB_s10": {
+          "lower_y": 731
+        },
+        "QLB_s11": {
+          "center_x": 1006
+        },
+        "QLB_s12": {
+          "all_dx": -50
+        },
+        "QLB_s13": {
+          "center_x": 956,
+          "all_dx": -50
+        }
+      }
+    },
+    "200": {
+      "size": 200,
+      "default_long": {
+        "type": "grid9",
+        "center_row_mode": "column_midpoint",
+        "left_x": 819,
+        "center_x": 1081,
+        "right_x": 1344,
+        "upper_y": 165,
+        "center_y": 428,
+        "lower_y": 691
+      },
+      "default_short": {
+        "type": "column3",
+        "center_row_mode": "column_midpoint",
+        "center_x": 1081,
+        "upper_y": 165,
+        "center_y": 428,
+        "lower_y": 691
+      },
+      "sample_overrides": {
+        "QLB_s1": {
+          "lower_y": 641,
+          "region_overrides": {
+            "ROI_LL": {"dy": -100},
+            "ROI_LC": {"dy": -75},
+            "ROI_LR": {"dy": -30}
+          }
+        },
+        "QLB_s2": {
+          "lower_y": 641,
+          "region_overrides": {
+            "ROI_LL": {"dy": -100},
+            "ROI_LC": {"dy": -75},
+            "ROI_LR": {"dy": -100}
+          }
+        },
+        "QLB_s3": {
+          "region_overrides": {
+            "ROI_LL": {"dy": -50},
+            "ROI_LC": {"dy": -50},
+            "ROI_LR": {"dy": -20}
+          }
+        },
+        "QLB_s5": {
+          "region_overrides": {
+            "ROI_LL": {"dy": -50},
+            "ROI_LC": {"dy": -50},
+            "ROI_LR": {"dy": -50}
+          }
+        },
+        "QLB_s7": {
+          "lower_y": 711,
+          "region_overrides": {
+            "ROI_UL": {"dy": 50},
+            "ROI_UC": {"dy": 20},
+            "ROI_UR": {"dy": 20}
+          }
+        },
+        "QLB_s8": {
+          "upper_y": 195,
+          "region_overrides": {
+            "ROI_LL": {"dy": -100},
+            "ROI_LC": {"dy": -70},
+            "ROI_LR": {"dy": -70}
+          }
+        },
+        "QLB_s9": {
+          "center_x": 981
+        },
+        "QLB_s11": {
+          "center_x": 981
+        },
+        "QLB_s12": {
+          "all_dx": -50
+        },
+        "QLB_s13": {
+          "center_x": 881
+        }
+      }
+    },
+    "300": {
+      "size": 300,
+      "default_long": {
+        "type": "grid9",
+        "center_row_mode": "column_midpoint",
+        "left_x": 829,
+        "center_x": 1031,
+        "right_x": 1234,
+        "upper_y": 175,
+        "center_y": 378,
+        "lower_y": 581
+      },
+      "default_short": {
+        "type": "column3",
+        "center_row_mode": "column_midpoint",
+        "center_x": 1031,
+        "upper_y": 175,
+        "center_y": 378,
+        "lower_y": 581
+      },
+      "sample_overrides": {
+        "QLB_s1": {
+          "lower_y": 531,
+          "region_overrides": {
+            "ROI_LL": {"dy": -100},
+            "ROI_LC": {"dy": -75},
+            "ROI_LR": {"dy": -30}
+          }
+        },
+        "QLB_s2": {
+          "lower_y": 531,
+          "region_overrides": {
+            "ROI_LL": {"dy": -100},
+            "ROI_LC": {"dy": -75},
+            "ROI_LR": {"dy": -100}
+          }
+        },
+        "QLB_s3": {
+          "region_overrides": {
+            "ROI_LL": {"dy": -100},
+            "ROI_LC": {"dy": -50},
+            "ROI_LR": {"dy": -20}
+          }
+        },
+        "QLB_s6": {
+          "upper_y": 195
+        },
+        "QLB_s7": {
+          "lower_y": 611,
+          "region_overrides": {
+            "ROI_UL": {"dy": 50},
+            "ROI_UC": {"dy": 20},
+            "ROI_UR": {"dy": 20}
+          }
+        },
+        "QLB_s8": {
+          "upper_y": 195,
+          "center_y": 398,
+          "lower_y": 601,
+          "region_overrides": {
+            "ROI_LL": {"dy": -100},
+            "ROI_LC": {"dy": -70},
+            "ROI_LR": {"dy": -70}
+          }
+        },
+        "QLB_s9": {
+          "center_x": 931
+        },
+        "QLB_s11": {
+          "center_x": 931
+        },
+        "QLB_s12": {
+          "center_x": 931
+        },
+        "QLB_s13": {
+          "center_x": 831
+        }
+      }
+    }
+  }
+}

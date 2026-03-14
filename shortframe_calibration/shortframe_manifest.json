@@ -1,0 +1,57 @@
+{
+  "mode_aliases": {
+    "PPL": "normal",
+    "XPL": "crosspol"
+  },
+  "rotation_geometry": "analysis_outputs/rotation_calibration/derotation_geometry.json",
+  "rotation_valid_mask": "analysis_outputs/rotation_calibration/rotation_calibration_valid_mask.png",
+  "roi_spec": "shortframe_calibration/shortframe_roi_200.json",
+  "outputs_dir": "shortframe_calibration/outputs",
+  "samples": [
+    {
+      "sample_id": "QLB_s9",
+      "sample_type": "short",
+      "sample_dir": "data/QLB/RAW/QLB_s9",
+      "blank_dir": "data/Calibration/blank_shortframe",
+      "empty_dir": "data/Calibration/empty_shortframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 200
+    },
+    {
+      "sample_id": "QLB_s10",
+      "sample_type": "short",
+      "sample_dir": "data/QLB/RAW/QLB_s10",
+      "blank_dir": "data/Calibration/blank_shortframe",
+      "empty_dir": "data/Calibration/empty_shortframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 200
+    },
+    {
+      "sample_id": "QLB_s11",
+      "sample_type": "short",
+      "sample_dir": "data/QLB/RAW/QLB_s11",
+      "blank_dir": "data/Calibration/blank_shortframe",
+      "empty_dir": "data/Calibration/empty_shortframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 200
+    },
+    {
+      "sample_id": "QLB_s12",
+      "sample_type": "short",
+      "sample_dir": "data/QLB/RAW/QLB_s12",
+      "blank_dir": "data/Calibration/blank_shortframe",
+      "empty_dir": "data/Calibration/empty_shortframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 200
+    },
+    {
+      "sample_id": "QLB_s13",
+      "sample_type": "short",
+      "sample_dir": "data/QLB/RAW/QLB_s13",
+      "blank_dir": "data/Calibration/blank_shortframe",
+      "empty_dir": "data/Calibration/empty_shortframe",
+      "dark_dir": "data/Calibration/dark",
+      "roi_size_fullres": 200
+    }
+  ]
+}

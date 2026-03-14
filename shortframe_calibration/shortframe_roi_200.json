@@ -1,0 +1,120 @@
+{
+  "roi_size_fullres": 200,
+  "roi_labels": [
+    "ROI_UC",
+    "ROI_CC",
+    "ROI_LC"
+  ],
+  "samples": {
+    "QLB_s9": {
+      "regions": {
+        "ROI_UC": {
+          "x": 981,
+          "y": 165,
+          "width": 200,
+          "height": 200
+        },
+        "ROI_CC": {
+          "x": 981,
+          "y": 428,
+          "width": 200,
+          "height": 200
+        },
+        "ROI_LC": {
+          "x": 981,
+          "y": 691,
+          "width": 200,
+          "height": 200
+        }
+      }
+    },
+    "QLB_s10": {
+      "regions": {
+        "ROI_UC": {
+          "x": 1081,
+          "y": 165,
+          "width": 200,
+          "height": 200
+        },
+        "ROI_CC": {
+          "x": 1081,
+          "y": 428,
+          "width": 200,
+          "height": 200
+        },
+        "ROI_LC": {
+          "x": 1081,
+          "y": 691,
+          "width": 200,
+          "height": 200
+        }
+      }
+    },
+    "QLB_s11": {
+      "regions": {
+        "ROI_UC": {
+          "x": 981,
+          "y": 165,
+          "width": 200,
+          "height": 200
+        },
+        "ROI_CC": {
+          "x": 981,
+          "y": 428,
+          "width": 200,
+          "height": 200
+        },
+        "ROI_LC": {
+          "x": 981,
+          "y": 691,
+          "width": 200,
+          "height": 200
+        }
+      }
+    },
+    "QLB_s12": {
+      "regions": {
+        "ROI_UC": {
+          "x": 1031,
+          "y": 165,
+          "width": 200,
+          "height": 200
+        },
+        "ROI_CC": {
+          "x": 1031,
+          "y": 428,
+          "width": 200,
+          "height": 200
+        },
+        "ROI_LC": {
+          "x": 1031,
+          "y": 691,
+          "width": 200,
+          "height": 200
+        }
+      }
+    },
+    "QLB_s13": {
+      "regions": {
+        "ROI_UC": {
+          "x": 881,
+          "y": 165,
+          "width": 200,
+          "height": 200
+        },
+        "ROI_CC": {
+          "x": 881,
+          "y": 428,
+          "width": 200,
+          "height": 200
+        },
+        "ROI_LC": {
+          "x": 881,
+          "y": 691,
+          "width": 200,
+          "height": 200
+        }
+      }
+    }
+  }
+}
